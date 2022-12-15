@@ -62,7 +62,7 @@ $aksIssuerUrl = (az aks show --name $clusterName -g $resourceGroup --query "oidc
 
 # Retrieve AKS admin credentials
 Write-Host "Retrieving AKS credentials" -ForegroundColor Yellow
-az aks get-credentials --name $clusterName --resource-group $resourceGroup
+az aks get-credentials --name $clusterName --resource-group $resourceGroup --overwrite-existing
 
 # Create service account
 Write-Host "Creating namespace $serviceAccountNamespace and service account $serviceAccountName" -ForegroundColor Yellow
