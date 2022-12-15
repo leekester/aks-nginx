@@ -90,6 +90,7 @@ az identity federated-credential create `
 # Configure ingress
 
 $ingressNamespace = "ns-ingress"
+$appNamespace = "hello-world"
 # kubectl create namespace ingress-nginx
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
@@ -100,3 +101,8 @@ helm install ingress-nginx ingress-nginx/ingress-nginx `
   --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz `
   --set controller.nodeSelector."kubernetes\.io/os"=linux `
   --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux
+
+kubectl create ns $appNamespace
+kubectl apply -f aks-helloworld-one.yaml --namespace $appNamespace
+kubectl apply -f aks-helloworld-two.yaml --namespace $appNamespace 
+kubectl apply -f hello-world-ingress.yaml --namespace $appNamespace
