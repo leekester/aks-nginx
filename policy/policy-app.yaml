@@ -19,7 +19,7 @@ spec:
         - containerPort: 80
         env:
         - name: TITLE
-          value: "policy Center"
+          value: "Policy Center"
 ---
 apiVersion: v1
 kind: Service
