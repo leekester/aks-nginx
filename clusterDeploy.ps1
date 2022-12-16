@@ -106,4 +106,5 @@ kubectl create ns $appNamespace
 kubectl apply -f aks-helloworld-one.yaml --namespace $appNamespace
 kubectl apply -f aks-helloworld-two.yaml --namespace $appNamespace 
 Write-Host "Waiting for back-end applications to become responsive..." -ForegroundColor Yellow
+Start-Sleep 5
 kubectl apply -f hello-world-ingress.yaml --namespace $appNamespace
