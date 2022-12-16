@@ -1,40 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: billing  
+  name: claims
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: billing
+      app: claims
   template:
     metadata:
       labels:
-        app: billing
+        app: claims
     spec:
       containers:
-      - name: billing
+      - name: claims
         image: mcr.microsoft.com/azuredocs/aks-helloworld:v1
-        # resources:
-        #   limits:
-        #     memory: "250Mi"
-        #     cpu: "250m"
-        #   requests:
-        #     memory: "200Mi"
-        #     cpu: "200m"
         ports:
         - containerPort: 80
         env:
         - name: TITLE
-          value: "Billing Center"
+          value: "Claims Center"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: billing  
+  name: claims  
 spec:
   type: ClusterIP
   ports:
   - port: 80
   selector:
-    app: billing
+    app: claims
