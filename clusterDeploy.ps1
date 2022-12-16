@@ -11,9 +11,6 @@ $serviceAccountNamespace = "ns-workloadid"
 $subscriptionId = (az account show --query id --output tsv)
 $userAssignedIdentityName = "$clusterName-uami"
 
-# Ingress configuration
-$bcIngress = "bc-ingress"
-
 # If required, install the pod identity feature
 Write-Host "Install/enable the workload identity feature..." -ForegroundColor Yellow
 az extension add --name aks-preview
@@ -89,7 +86,7 @@ az identity federated-credential create `
 
 # Deploy ingress controller
 
-$ingressNamespace = "ns-ingress"
+$ingressNamespace = "nginx-ns"
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install ingress-nginx ingress-nginx/ingress-nginx `
@@ -102,9 +99,9 @@ helm install ingress-nginx ingress-nginx/ingress-nginx `
 
 # Deploy applications
 
-$billingNamespace = "ns-billing"
-$claimsNamespace = "ns-claims"
-$policyNamespace = "ns-policy"
+$billingNamespace = "billing-ns"
+$claimsNamespace = "claims-ns"
+$policyNamespace = "policy-ns"
 
 kubectl create ns $billingNamespace
 kubectl create ns $claimsNamespace
@@ -117,7 +114,7 @@ kubectl apply -f policy/policy-app.yaml --namespace $policyNamespace
 # Deploy ingress
 
 $waitSeconds = 20
-Write-Host "Waiting for $waitSeconds for back-end applications to become responsive..." -ForegroundColor Yellow
+Write-Host "Waiting for $waitSeconds seconds for back-end applications to become responsive..." -ForegroundColor Yellow
 Start-Sleep $waitSeconds
 kubectl apply -f billing/billing-ingress.yaml --namespace $billingNamespace
 kubectl apply -f claims/claims-ingress.yaml --namespace $claimsNamespace
