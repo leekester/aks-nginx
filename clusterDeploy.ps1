@@ -87,11 +87,9 @@ az identity federated-credential create `
   --issuer $aksIssuerUrl `
   --subject system:serviceaccount:$serviceAccountNamespace`:$serviceAccountName
 
-# Configure ingress
+# Deploy ingress controller
 
 $ingressNamespace = "ns-ingress"
-$appNamespace = "hello-world"
-# kubectl create namespace ingress-nginx
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install ingress-nginx ingress-nginx/ingress-nginx `
@@ -102,9 +100,25 @@ helm install ingress-nginx ingress-nginx/ingress-nginx `
   --set controller.nodeSelector."kubernetes\.io/os"=linux `
   --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux
 
-kubectl create ns $appNamespace
-kubectl apply -f aks-helloworld-one.yaml --namespace $appNamespace
-kubectl apply -f aks-helloworld-two.yaml --namespace $appNamespace 
-Write-Host "Waiting for back-end applications to become responsive..." -ForegroundColor Yellow
-Start-Sleep 5
-kubectl apply -f hello-world-ingress.yaml --namespace $appNamespace
+# Deploy applications
+
+$billingNamespace = "ns-billing"
+$claimsNamespace = "ns-claims"
+$policyNamespace = "ns-policy"
+
+kubectl create ns $billingNamespace
+kubectl create ns $claimsNamespace
+kubectl create ns $policyNamespace
+
+kubectl apply -f billing/billing-app.yaml --namespace $billingNamespace
+kubectl apply -f claims/claims-app.yaml --namespace $claimsNamespace
+kubectl apply -f policy/policy-app.yaml --namespace $policyNamespace
+
+# Deploy ingress
+
+$waitSeconds = 20
+Write-Host "Waiting for $waitSeconds for back-end applications to become responsive..." -ForegroundColor Yellow
+Start-Sleep $waitSeconds
+kubectl apply -f billing/billing-ingress.yaml --namespace $billingNamespace
+kubectl apply -f claims/claims-ingress.yaml --namespace $claimsNamespace
+kubectl apply -f policy/policy-ingress.yaml --namespace $policyNamespace

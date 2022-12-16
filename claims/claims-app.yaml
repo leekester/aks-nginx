@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claims
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claims
+  template:
+    metadata:
+      labels:
+        app: claims
+    spec:
+      containers:
+      - name: claims
+        image: mcr.microsoft.com/azuredocs/aks-helloworld:v1
+        ports:
+        - containerPort: 80
+        env:
+        - name: TITLE
+          value: "Claims Center"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: claims  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: claims
