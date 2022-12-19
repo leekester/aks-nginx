@@ -15,13 +15,13 @@ spec:
       containers:
       - name: billing
         image: mcr.microsoft.com/azuredocs/aks-helloworld:v1
-        # resources:
-        #   limits:
-        #     memory: "250Mi"
-        #     cpu: "250m"
-        #   requests:
-        #     memory: "200Mi"
-        #     cpu: "200m"
+        resources:
+          limits:
+            memory: "250Mi"
+            cpu: "250m"
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
         ports:
         - containerPort: 80
         env:
