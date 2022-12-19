@@ -4,7 +4,7 @@ $clusterName = "aks-playground"
 $keyVaultName = ("kvmatt" + (Get-Random -Minimum 100000000 -Maximum 999999999))
 $federatedIdentityName = ("aks-id" + $clusterName)
 $crName = ("acrmatt" + (Get-Random -Minimum 100000000 -Maximum 999999999))
-$nodesize = "Standard_B2s"
+$nodesize = "Standard_D3_v2"
 $nodeCount = "1"
 $serviceAccountName = "sa-workload-identity"
 $serviceAccountNamespace = "ns-workloadid"
@@ -28,10 +28,12 @@ az group create `
 az aks create `
   --resource-group $resourceGroup `
   --name $clusterName `
+  --node-vm-size $nodesize `
   --node-count $nodeCount `
   --enable-oidc-issuer `
   --enable-workload-identity `
-  --generate-ssh-keys
+  --generate-ssh-keys `
+  --enable-addons open-service-mesh
 
 # Create Managed Identity
 Write-Host "Creating Managed Identity $userAssignedIdentityName" -ForegroundColor Yellow
@@ -97,8 +99,9 @@ helm install ingress-nginx ingress-nginx/ingress-nginx `
   --set controller.nodeSelector."kubernetes\.io/os"=linux `
   --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux
 
-# Deploy applications
+# Create namespaces
 
+Write-Host "Creating namespaces..." -ForegroundColor Yellow
 $billingNamespace = "billing-ns"
 $claimsNamespace = "claims-ns"
 $policyNamespace = "policy-ns"
@@ -107,6 +110,16 @@ kubectl create ns $billingNamespace
 kubectl create ns $claimsNamespace
 kubectl create ns $policyNamespace
 
+# Integrate with OSM
+
+Write-Host "Adding namespaces to OSM..." -ForegroundColor Yellow
+osm namespace add $billingNamespace
+osm namespace add $claimsNamespace
+osm namespace add $policyNamespace
+
+# Deploy applications
+
+Write-Host "Deploying applications..." -ForegroundColor Yellow
 kubectl apply -f billing/billing-app.yaml --namespace $billingNamespace
 kubectl apply -f claims/claims-app.yaml --namespace $claimsNamespace
 kubectl apply -f policy/policy-app.yaml --namespace $policyNamespace
@@ -116,6 +129,15 @@ kubectl apply -f policy/policy-app.yaml --namespace $policyNamespace
 $waitSeconds = 20
 Write-Host "Waiting for $waitSeconds seconds for back-end applications to become responsive..." -ForegroundColor Yellow
 Start-Sleep $waitSeconds
+Write-Host "Deploying ingress resources..." -ForegroundColor Yellow
 kubectl apply -f billing/billing-ingress.yaml --namespace $billingNamespace
 kubectl apply -f claims/claims-ingress.yaml --namespace $claimsNamespace
 kubectl apply -f policy/policy-ingress.yaml --namespace $policyNamespace
+
+# Ouput external IP address
+$externalIp = kubectl get services --namespace=$ingressNamespace -o jsonpath="{.items[0].status.loadBalancer.ingress[0].ip}"
+Write-Host "External IP of services is $externalIp
+For testing, update your local hosts file to include:
+$externalIp    billing.inside.direct
+$externalIp    claims.inside.direct
+$externalIp    policy.inside.direct" -ForegroundColor Yellow
