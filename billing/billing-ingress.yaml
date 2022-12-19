@@ -36,3 +36,18 @@ spec:
             name: billing
             port:
               number: 80
+---
+kind: IngressBackend
+apiVersion: policy.openservicemesh.io/v1alpha1
+metadata:
+  name: billing
+  namespace: billing-ns
+spec:
+  backends:
+  - name: billing
+    port:
+      number: 80
+      protocol: http
+  sources:
+  - kind: IPRange
+    name: 0.0.0.0/0

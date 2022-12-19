@@ -36,3 +36,18 @@ spec:
             name: policy
             port:
               number: 80
+---
+kind: IngressBackend
+apiVersion: policy.openservicemesh.io/v1alpha1
+metadata:
+  name: policy
+  namespace: policy-ns
+spec:
+  backends:
+  - name: policy
+    port:
+      number: 80
+      protocol: http
+  sources:
+  - kind: IPRange
+    name: 0.0.0.0/0
